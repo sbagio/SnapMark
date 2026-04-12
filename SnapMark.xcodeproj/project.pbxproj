@@ -1,0 +1,368 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		1A2B3C4D5E6F0000000001B1 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F0000000001F1; };
+		1A2B3C4D5E6F0000000002B2 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F0000000002F2; };
+		1A2B3C4D5E6F0000000003B3 /* HotkeyManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F0000000003F3; };
+		1A2B3C4D5E6F0000000004B4 /* OverlayWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F0000000004F4; };
+		1A2B3C4D5E6F0000000005B5 /* DimmingOverlayWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F0000000005F5; };
+		1A2B3C4D5E6F0000000006B6 /* SelectionOverlayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F0000000006F6; };
+		1A2B3C4D5E6F0000000007B7 /* ScreenCaptureService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F0000000007F7; };
+		1A2B3C4D5E6F0000000008B8 /* AnnotationWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F0000000008F8; };
+		1A2B3C4D5E6F0000000009B9 /* AnnotationWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F0000000009F9; };
+		1A2B3C4D5E6F000000000AB0 /* AnnotationViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F000000000AF0; };
+		1A2B3C4D5E6F000000000BB0 /* CanvasView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F000000000BF0; };
+		1A2B3C4D5E6F000000000CB0 /* ToolbarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F000000000CF0; };
+		1A2B3C4D5E6F000000000DB0 /* Annotation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F000000000DF0; };
+		1A2B3C4D5E6F000000000EB0 /* AnnotationStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F000000000EF0; };
+		1A2B3C4D5E6F000000000FB0 /* DrawingTool.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F000000000FF0; };
+		1A2B3C4D5E6F0000000010B0 /* ExportService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F0000000010F0; };
+		1A2B3C4D5E6F0000000011B0 /* AnnotationRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F0000000011F0; };
+		1A2B3C4D5E6F000000000F01 /* ScreenCaptureKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F000000000F00; };
+		1A2B3C4D5E6F000000000F03 /* Carbon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F000000000F02; };
+		1A2B3C4D5E6F000000000F08 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F000000000F07; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		1A2B3C4D5E6F0000000001F1 /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
+		1A2B3C4D5E6F0000000002F2 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		1A2B3C4D5E6F0000000003F3 /* HotkeyManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HotkeyManager.swift; sourceTree = "<group>"; };
+		1A2B3C4D5E6F0000000004F4 /* OverlayWindowController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OverlayWindowController.swift; sourceTree = "<group>"; };
+		1A2B3C4D5E6F0000000005F5 /* DimmingOverlayWindow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DimmingOverlayWindow.swift; sourceTree = "<group>"; };
+		1A2B3C4D5E6F0000000006F6 /* SelectionOverlayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SelectionOverlayView.swift; sourceTree = "<group>"; };
+		1A2B3C4D5E6F0000000007F7 /* ScreenCaptureService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenCaptureService.swift; sourceTree = "<group>"; };
+		1A2B3C4D5E6F0000000008F8 /* AnnotationWindowController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnnotationWindowController.swift; sourceTree = "<group>"; };
+		1A2B3C4D5E6F0000000009F9 /* AnnotationWindow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnnotationWindow.swift; sourceTree = "<group>"; };
+		1A2B3C4D5E6F000000000AF0 /* AnnotationViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnnotationViewController.swift; sourceTree = "<group>"; };
+		1A2B3C4D5E6F000000000BF0 /* CanvasView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CanvasView.swift; sourceTree = "<group>"; };
+		1A2B3C4D5E6F000000000CF0 /* ToolbarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToolbarView.swift; sourceTree = "<group>"; };
+		1A2B3C4D5E6F000000000DF0 /* Annotation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Annotation.swift; sourceTree = "<group>"; };
+		1A2B3C4D5E6F000000000EF0 /* AnnotationStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnnotationStore.swift; sourceTree = "<group>"; };
+		1A2B3C4D5E6F000000000FF0 /* DrawingTool.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DrawingTool.swift; sourceTree = "<group>"; };
+		1A2B3C4D5E6F0000000010F0 /* ExportService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExportService.swift; sourceTree = "<group>"; };
+		1A2B3C4D5E6F0000000011F0 /* AnnotationRenderer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnnotationRenderer.swift; sourceTree = "<group>"; };
+		1A2B3C4D5E6F000000000F00 /* ScreenCaptureKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ScreenCaptureKit.framework; path = System/Library/Frameworks/ScreenCaptureKit.framework; sourceTree = SDKROOT; };
+		1A2B3C4D5E6F000000000F02 /* Carbon.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Carbon.framework; path = System/Library/Frameworks/Carbon.framework; sourceTree = SDKROOT; };
+		1A2B3C4D5E6F000000000F04 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		1A2B3C4D5E6F000000000F06 /* SnapMark.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = SnapMark.entitlements; sourceTree = "<group>"; };
+		1A2B3C4D5E6F000000000F07 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		1A2B3C4D5E6F0000000000B1 /* SnapMark.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SnapMark.app; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		1A2B3C4D5E6F0000000000C1 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				1A2B3C4D5E6F000000000F01 /* ScreenCaptureKit.framework in Frameworks */,
+				1A2B3C4D5E6F000000000F03 /* Carbon.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		1A2B3C4D5E6F0000000000A0 /* SnapMark */ = {
+			isa = PBXGroup;
+			children = (
+				1A2B3C4D5E6F0000000000A3 /* SnapMark */,
+				1A2B3C4D5E6F0000000000A2 /* Products */,
+				1A2B3C4D5E6F0000000000F0 /* Frameworks */,
+			);
+			sourceTree = "<group>";
+		};
+		1A2B3C4D5E6F0000000000A2 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				1A2B3C4D5E6F0000000000B1 /* SnapMark.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		1A2B3C4D5E6F0000000000F0 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				1A2B3C4D5E6F000000000F00 /* ScreenCaptureKit.framework */,
+				1A2B3C4D5E6F000000000F02 /* Carbon.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		1A2B3C4D5E6F0000000000A3 /* SnapMark */ = {
+			isa = PBXGroup;
+			children = (
+				1A2B3C4D5E6F0000000001F1 /* main.swift */,
+				1A2B3C4D5E6F0000000000A4 /* App */,
+				1A2B3C4D5E6F0000000000A5 /* Capture */,
+				1A2B3C4D5E6F0000000000A6 /* Annotation */,
+				1A2B3C4D5E6F0000000000A7 /* Model */,
+				1A2B3C4D5E6F0000000000A8 /* Export */,
+				1A2B3C4D5E6F0000000000A9 /* Resources */,
+				1A2B3C4D5E6F000000000F04 /* Info.plist */,
+			);
+			path = SnapMark;
+			sourceTree = "<group>";
+		};
+		1A2B3C4D5E6F0000000000A4 /* App */ = {
+			isa = PBXGroup;
+			children = (
+				1A2B3C4D5E6F0000000002F2 /* AppDelegate.swift */,
+			);
+			path = App;
+			sourceTree = "<group>";
+		};
+		1A2B3C4D5E6F0000000000A5 /* Capture */ = {
+			isa = PBXGroup;
+			children = (
+				1A2B3C4D5E6F0000000003F3 /* HotkeyManager.swift */,
+				1A2B3C4D5E6F0000000004F4 /* OverlayWindowController.swift */,
+				1A2B3C4D5E6F0000000005F5 /* DimmingOverlayWindow.swift */,
+				1A2B3C4D5E6F0000000006F6 /* SelectionOverlayView.swift */,
+				1A2B3C4D5E6F0000000007F7 /* ScreenCaptureService.swift */,
+			);
+			path = Capture;
+			sourceTree = "<group>";
+		};
+		1A2B3C4D5E6F0000000000A6 /* Annotation */ = {
+			isa = PBXGroup;
+			children = (
+				1A2B3C4D5E6F0000000008F8 /* AnnotationWindowController.swift */,
+				1A2B3C4D5E6F0000000009F9 /* AnnotationWindow.swift */,
+				1A2B3C4D5E6F000000000AF0 /* AnnotationViewController.swift */,
+				1A2B3C4D5E6F000000000BF0 /* CanvasView.swift */,
+				1A2B3C4D5E6F000000000CF0 /* ToolbarView.swift */,
+			);
+			path = Annotation;
+			sourceTree = "<group>";
+		};
+		1A2B3C4D5E6F0000000000A7 /* Model */ = {
+			isa = PBXGroup;
+			children = (
+				1A2B3C4D5E6F000000000DF0 /* Annotation.swift */,
+				1A2B3C4D5E6F000000000EF0 /* AnnotationStore.swift */,
+				1A2B3C4D5E6F000000000FF0 /* DrawingTool.swift */,
+			);
+			path = Model;
+			sourceTree = "<group>";
+		};
+		1A2B3C4D5E6F0000000000A8 /* Export */ = {
+			isa = PBXGroup;
+			children = (
+				1A2B3C4D5E6F0000000010F0 /* ExportService.swift */,
+				1A2B3C4D5E6F0000000011F0 /* AnnotationRenderer.swift */,
+			);
+			path = Export;
+			sourceTree = "<group>";
+		};
+		1A2B3C4D5E6F0000000000A9 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				1A2B3C4D5E6F000000000F06 /* SnapMark.entitlements */,
+				1A2B3C4D5E6F000000000F07 /* Assets.xcassets */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		1A2B3C4D5E6F0000000000B0 /* SnapMark */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 1A2B3C4D5E6F0000000000D1;
+			buildPhases = (
+				1A2B3C4D5E6F0000000000C0 /* Sources */,
+				1A2B3C4D5E6F0000000000C1 /* Frameworks */,
+				1A2B3C4D5E6F0000000000C2 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = SnapMark;
+			productName = SnapMark;
+			productReference = 1A2B3C4D5E6F0000000000B1 /* SnapMark.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		1A2B3C4D5E6F0000000000A0PROJ /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1600;
+				LastUpgradeCheck = 1600;
+			};
+			buildConfigurationList = 1A2B3C4D5E6F0000000000D0;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 1A2B3C4D5E6F0000000000A0;
+			productRefGroup = 1A2B3C4D5E6F0000000000A2;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				1A2B3C4D5E6F0000000000B0 /* SnapMark */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		1A2B3C4D5E6F0000000000C2 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				1A2B3C4D5E6F000000000F08 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		1A2B3C4D5E6F0000000000C0 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				1A2B3C4D5E6F0000000001B1 /* main.swift in Sources */,
+				1A2B3C4D5E6F0000000002B2 /* AppDelegate.swift in Sources */,
+				1A2B3C4D5E6F0000000003B3 /* HotkeyManager.swift in Sources */,
+				1A2B3C4D5E6F0000000004B4 /* OverlayWindowController.swift in Sources */,
+				1A2B3C4D5E6F0000000005B5 /* DimmingOverlayWindow.swift in Sources */,
+				1A2B3C4D5E6F0000000006B6 /* SelectionOverlayView.swift in Sources */,
+				1A2B3C4D5E6F0000000007B7 /* ScreenCaptureService.swift in Sources */,
+				1A2B3C4D5E6F0000000008B8 /* AnnotationWindowController.swift in Sources */,
+				1A2B3C4D5E6F0000000009B9 /* AnnotationWindow.swift in Sources */,
+				1A2B3C4D5E6F000000000AB0 /* AnnotationViewController.swift in Sources */,
+				1A2B3C4D5E6F000000000BB0 /* CanvasView.swift in Sources */,
+				1A2B3C4D5E6F000000000CB0 /* ToolbarView.swift in Sources */,
+				1A2B3C4D5E6F000000000DB0 /* Annotation.swift in Sources */,
+				1A2B3C4D5E6F000000000EB0 /* AnnotationStore.swift in Sources */,
+				1A2B3C4D5E6F000000000FB0 /* DrawingTool.swift in Sources */,
+				1A2B3C4D5E6F0000000010B0 /* ExportService.swift in Sources */,
+				1A2B3C4D5E6F0000000011B0 /* AnnotationRenderer.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		1A2B3C4D5E6F0000000000E0 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_TESTABILITY = YES;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		1A2B3C4D5E6F0000000000E1 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				MTL_FAST_MATH = YES;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+			};
+			name = Release;
+		};
+		1A2B3C4D5E6F0000000000E2 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = arm64;
+				CODE_SIGN_ENTITLEMENTS = "SnapMark/Resources/SnapMark.entitlements";
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Manual;
+				DEVELOPMENT_TEAM = "";
+				ENABLE_HARDENED_RUNTIME = YES;
+				INFOPLIST_FILE = "SnapMark/Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.snapmark.app";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_STRICT_CONCURRENCY = complete;
+				SWIFT_VERSION = 6.0;
+			};
+			name = Debug;
+		};
+		1A2B3C4D5E6F0000000000E3 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = arm64;
+				CODE_SIGN_ENTITLEMENTS = "SnapMark/Resources/SnapMark.entitlements";
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Manual;
+				DEVELOPMENT_TEAM = "";
+				ENABLE_HARDENED_RUNTIME = YES;
+				INFOPLIST_FILE = "SnapMark/Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.snapmark.app";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_STRICT_CONCURRENCY = complete;
+				SWIFT_VERSION = 6.0;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		1A2B3C4D5E6F0000000000D0 /* Build configuration list for PBXProject "SnapMark" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				1A2B3C4D5E6F0000000000E0 /* Debug */,
+				1A2B3C4D5E6F0000000000E1 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		1A2B3C4D5E6F0000000000D1 /* Build configuration list for PBXNativeTarget "SnapMark" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				1A2B3C4D5E6F0000000000E2 /* Debug */,
+				1A2B3C4D5E6F0000000000E3 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+
+	};
+	rootObject = 1A2B3C4D5E6F0000000000A0PROJ /* Project object */;
+}

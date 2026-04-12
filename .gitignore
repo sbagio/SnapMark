@@ -1,0 +1,32 @@
+# Build artifacts
+build/
+.build/
+*.o
+*.d
+
+# Assembled app bundle (built locally via make install)
+SnapMark.app/
+
+# Xcode
+*.xcodeproj/xcuserdata/
+*.xcworkspace/
+xcuserdata/
+DerivedData/
+*.pbxuser
+*.mode1v3
+*.mode2v3
+*.perspectivev3
+*.xccheckout
+*.moved-aside
+*.xcuserstate
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+.Spotlight-V100
+.Trashes
+
+# Swift Package Manager
+.swiftpm/
