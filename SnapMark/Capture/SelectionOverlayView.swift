@@ -189,6 +189,11 @@ final class SelectionOverlayView: NSView {
 
     override var acceptsFirstResponder: Bool { true }
 
+    // Pass the first click directly to the view instead of consuming it
+    // for window activation — fixes the "click twice to start" issue on
+    // secondary displays where the window isn't yet key.
+    override func acceptsFirstMouse(for event: NSEvent?) -> Bool { true }
+
     // MARK: - Helpers
 
     private func normalizedRect(from a: CGPoint, to b: CGPoint) -> CGRect {
