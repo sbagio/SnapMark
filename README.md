@@ -4,6 +4,8 @@ A lightweight native macOS screenshot annotation tool that lives in your menu ba
 
 **Cmd+Shift+2** → select a region → annotate → copy or save.
 
+![SnapMark demo](demo.gif)
+
 ## Features
 
 - **Instant capture** — global hotkey dims the screen, crosshair lets you drag a region
