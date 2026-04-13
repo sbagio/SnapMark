@@ -6,7 +6,16 @@ import Foundation
 // Bootstrap AppKit so off-screen rendering works without a display
 let app = NSApplication.shared
 
-let outputDir = "<project-root>/SnapMark/Resources/Assets.xcassets/AppIcon.appiconset"
+// Resolve output dir relative to this script's location, so no absolute
+// paths (and no developer username) are baked into the source file.
+let scriptPath = CommandLine.arguments[0]
+let scriptURL  = URL(fileURLWithPath: scriptPath).standardized
+// scripts/ → project root → SnapMark/Resources/Assets.xcassets/AppIcon.appiconset
+let outputDir  = scriptURL
+    .deletingLastPathComponent()          // scripts/
+    .deletingLastPathComponent()          // project root
+    .appendingPathComponent("SnapMark/Resources/Assets.xcassets/AppIcon.appiconset")
+    .path
 
 let sizes: [(Int, String)] = [
     (16,   "app-16.png"),
