@@ -1,5 +1,6 @@
 import AppKit
 import SwiftUI
+import SnapMarkCore
 
 @MainActor
 final class AnnotationViewController: NSViewController {
@@ -20,10 +21,10 @@ final class AnnotationViewController: NSViewController {
 
     required init?(coder: NSCoder) { fatalError() }
 
-    // Tell AppKit the desired window content size so NSWindowController doesn't
-    // collapse the window to zero when it shows the window.
+    private var isCompact: Bool { WindowSizing.isCompact(captureWidth: logicalSize.width) }
+
     override var preferredContentSize: CGSize {
-        get { CGSize(width: logicalSize.width, height: logicalSize.height + 44) }
+        get { CGSize(width: max(WindowSizing.minWidth, logicalSize.width), height: logicalSize.height + 44) }
         set { }
     }
 
@@ -37,7 +38,7 @@ final class AnnotationViewController: NSViewController {
         super.viewDidLoad()
 
         // Toolbar (SwiftUI hosted)
-        let toolbarView = ToolbarView(store: store)
+        let toolbarView = ToolbarView(store: store, isCompact: isCompact)
         let hostingView = NSHostingView(rootView: toolbarView)
         hostingView.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(hostingView)
@@ -144,13 +145,17 @@ scrollView.translatesAutoresizingMaskIntoConstraints = false
     }
 
     private func handleCopy() {
-        ExportService.copyToClipboard(compositeImage())
+        let img = compositeImage()
+        ExportService.copyToClipboard(img)
+        HistoryStore.shared.save(img)
         closeWindow()
     }
 
     private func handleSave() {
+        let img = compositeImage()
+        HistoryStore.shared.save(img)
         do {
-            let url = try ExportService.saveToDisk(compositeImage())
+            let url = try ExportService.saveToDisk(img)
             NSLog("SnapMark: Saved to %@", url.path)
         } catch {
             NSLog("SnapMark: Save failed: %@", error.localizedDescription)
@@ -161,6 +166,7 @@ scrollView.translatesAutoresizingMaskIntoConstraints = false
     private func handleCopyAndSave() {
         let img = compositeImage()
         ExportService.copyToClipboard(img)
+        HistoryStore.shared.save(img)
         do {
             let url = try ExportService.saveToDisk(img)
             NSLog("SnapMark: Saved to %@", url.path)

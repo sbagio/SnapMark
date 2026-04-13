@@ -1,4 +1,5 @@
 import AppKit
+import SnapMarkCore
 
 @MainActor
 final class AnnotationWindowController: NSWindowController {
@@ -15,20 +16,19 @@ final class AnnotationWindowController: NSWindowController {
         // Size the window to match the captured selection (screenRect is in logical points).
         // Toolbar adds 44pt on top; 12pt padding on each side frames the image.
         // Cap at 95% of visible screen so it always fits.
-        let toolbarHeight: CGFloat = 44
         let screenFrame = NSScreen.main?.visibleFrame ?? CGRect(x: 0, y: 0, width: 1440, height: 900)
         let nativeW = screenRect.width
         let nativeH = screenRect.height
-        let maxW = screenFrame.width  * 0.95
-        let maxH = screenFrame.height * 0.95 - toolbarHeight
-        let scale = min(1.0, min(maxW / nativeW, maxH / nativeH))
-        let windowW = (nativeW * scale).rounded()
-        let windowH = (nativeH * scale + toolbarHeight).rounded()
-        let originX = screenFrame.minX + (screenFrame.width  - windowW) / 2
-        let originY = screenFrame.minY + (screenFrame.height - windowH) / 2
-        let windowRect = CGRect(x: originX, y: originY, width: windowW, height: windowH)
+        let winSize = WindowSizing.compute(
+            captureSize: CGSize(width: nativeW, height: nativeH),
+            screenFrame: screenFrame
+        )
+        let originX = screenFrame.minX + (screenFrame.width  - winSize.width)  / 2
+        let originY = screenFrame.minY + (screenFrame.height - winSize.height) / 2
+        let windowRect = CGRect(origin: CGPoint(x: originX, y: originY), size: winSize)
 
         let win = AnnotationWindow(contentRect: windowRect)
+        win.minSize = CGSize(width: WindowSizing.minWidth, height: WindowSizing.minHeight)
         win.title = "SnapMark  —  \(Int(nativeW)) × \(Int(nativeH))"
 
         let vc = AnnotationViewController(image: image, logicalSize: CGSize(width: nativeW, height: nativeH))

@@ -3,9 +3,9 @@ import CoreGraphics
 
 /// Stateless drawing functions shared by CanvasView and ExportService.
 /// All coordinates are in a Y-down (flipped) coordinate space matching CGImage layout.
-enum AnnotationRenderer {
+public enum AnnotationRenderer {
 
-    static func draw(_ item: AnnotationItem, in ctx: CGContext) {
+    public static func draw(_ item: AnnotationItem, in ctx: CGContext) {
         ctx.saveGState()
         switch item {
         case .arrow(let a):
@@ -23,7 +23,7 @@ enum AnnotationRenderer {
 
     // MARK: - Arrow
 
-    static func drawArrow(
+    public static func drawArrow(
         tail: CGPoint,
         head: CGPoint,
         color: NSColor,
@@ -36,24 +36,20 @@ enum AnnotationRenderer {
         ctx.setLineCap(.round)
         ctx.setLineJoin(.round)
 
-        // Arrowhead geometry — computed first so the shaft can stop at the triangle base.
         let wingLength: CGFloat = max(14, strokeWidth * 5)
-        let wingAngle: CGFloat = .pi * 25.0 / 180.0   // 25 degrees
+        let wingAngle: CGFloat = .pi * 25.0 / 180.0
 
         let dx = head.x - tail.x
         let dy = head.y - tail.y
         guard abs(dx) > 0.001 || abs(dy) > 0.001 else { return }
         let angle = atan2(dy, dx)
 
-        // Stop the shaft at the base of the arrowhead so the rounded line cap
-        // doesn't poke through the triangle tip.
         let baseSetback = wingLength * cos(wingAngle)
         let shaftEnd = CGPoint(
             x: head.x - baseSetback * cos(angle),
             y: head.y - baseSetback * sin(angle)
         )
 
-        // Draw shaft
         ctx.move(to: tail)
         ctx.addLine(to: shaftEnd)
         ctx.strokePath()
@@ -76,14 +72,14 @@ enum AnnotationRenderer {
 
     // MARK: - Highlight
 
-    static func drawHighlight(_ rect: CGRect, color: NSColor, in ctx: CGContext) {
+    public static func drawHighlight(_ rect: CGRect, color: NSColor, in ctx: CGContext) {
         ctx.setFillColor(color.withAlphaComponent(0.38).cgColor)
         ctx.fill(rect)
     }
 
     // MARK: - Rectangle
 
-    static func drawRect(
+    public static func drawRect(
         _ rect: CGRect,
         color: NSColor,
         strokeWidth: CGFloat,
@@ -96,7 +92,7 @@ enum AnnotationRenderer {
 
     // MARK: - Text
 
-    static func drawText(
+    public static func drawText(
         _ content: String,
         at origin: CGPoint,
         color: NSColor,
@@ -112,17 +108,11 @@ enum AnnotationRenderer {
         let line = CTLineCreateWithAttributedString(str)
 
         ctx.saveGState()
-
-        // CoreText always draws in Y-up space. Both our canvas (isFlipped=true)
-        // and export contexts use a Y-down (flipped) CTM, so we compensate by
-        // translating to the origin and flipping Y back before drawing.
         ctx.textMatrix = .identity
         ctx.translateBy(x: origin.x, y: origin.y)
         ctx.scaleBy(x: 1, y: -1)
         ctx.textPosition = .zero
-
         CTLineDraw(line, ctx)
-
         ctx.restoreGState()
     }
 }

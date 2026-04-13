@@ -2,16 +2,15 @@ import AppKit
 import CoreGraphics
 
 @MainActor
-struct ExportService {
+public struct ExportService {
 
     // MARK: - Composite
 
-    static func compositeImage(
+    public static func compositeImage(
         baseImage: CGImage,
         annotations: [AnnotationItem],
         canvasSize: CGSize
     ) -> NSImage {
-        // Create offscreen bitmap at 1× logical resolution
         guard let rep = NSBitmapImageRep(
             bitmapDataPlanes: nil,
             pixelsWide: Int(canvasSize.width),
@@ -24,7 +23,6 @@ struct ExportService {
             bytesPerRow: 0,
             bitsPerPixel: 32
         ) else {
-            // Fallback: return NSImage from CGImage
             return NSImage(cgImage: baseImage, size: canvasSize)
         }
         rep.size = canvasSize
@@ -37,13 +35,9 @@ struct ExportService {
         NSGraphicsContext.current = gc
         let ctx = gc.cgContext
 
-        // Draw base screenshot using NSImage — coordinate-system-aware, renders
-        // correctly in both Y-up (bitmap) and Y-down (flipped) contexts.
         let nsImage = NSImage(cgImage: baseImage, size: canvasSize)
         nsImage.draw(in: CGRect(origin: .zero, size: canvasSize))
 
-        // Annotations are stored in canvas Y-down coordinates (origin top-left).
-        // The bitmap context is Y-up by default, so flip it before drawing them.
         ctx.saveGState()
         ctx.translateBy(x: 0, y: canvasSize.height)
         ctx.scaleBy(x: 1, y: -1)
@@ -61,7 +55,7 @@ struct ExportService {
 
     // MARK: - Clipboard
 
-    static func copyToClipboard(_ image: NSImage) {
+    public static func copyToClipboard(_ image: NSImage) {
         let pb = NSPasteboard.general
         pb.clearContents()
         pb.writeObjects([image])
@@ -70,7 +64,7 @@ struct ExportService {
     // MARK: - Save to Disk
 
     @discardableResult
-    static func saveToDisk(_ image: NSImage) throws -> URL {
+    public static func saveToDisk(_ image: NSImage) throws -> URL {
         let screenshotsDir = FileManager.default.homeDirectoryForCurrentUser
             .appendingPathComponent("Screenshots")
         try FileManager.default.createDirectory(
@@ -84,9 +78,9 @@ struct ExportService {
         let url = screenshotsDir.appendingPathComponent(filename)
 
         guard
-            let tiff = image.tiffRepresentation,
+            let tiff   = image.tiffRepresentation,
             let bitmap = NSBitmapImageRep(data: tiff),
-            let png = bitmap.representation(using: .png, properties: [:])
+            let png    = bitmap.representation(using: .png, properties: [:])
         else {
             throw ExportError.encodingFailed
         }
@@ -95,9 +89,9 @@ struct ExportService {
         return url
     }
 
-    enum ExportError: Error, LocalizedError {
+    public enum ExportError: Error, LocalizedError {
         case encodingFailed
 
-        var errorDescription: String? { "Failed to encode image as PNG." }
+        public var errorDescription: String? { "Failed to encode image as PNG." }
     }
 }

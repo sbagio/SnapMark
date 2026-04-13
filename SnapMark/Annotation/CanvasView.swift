@@ -1,5 +1,6 @@
 import AppKit
 import CoreGraphics
+import SnapMarkCore
 
 @MainActor
 final class CanvasView: NSView, NSTextFieldDelegate {

@@ -1,4 +1,5 @@
 import AppKit
+import SnapMarkCore
 
 final class AnnotationWindow: NSWindow {
 

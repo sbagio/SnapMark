@@ -1,8 +1,10 @@
 import SwiftUI
 import AppKit
+import SnapMarkCore
 
 struct ToolbarView: View {
     @ObservedObject var store: AnnotationStore
+    var isCompact: Bool = false
     @State private var showColorPopover = false
 
     static let palette: [NSColor] = [
@@ -75,14 +77,33 @@ struct ToolbarView: View {
 
             Spacer()
 
-            // Keyboard shortcut buttons — clickable, same action as the shortcut
-            HStack(spacing: 12) {
-                ShortcutButton(key: "⌘C",  label: "Copy")   { store.onCopy?() }
-                ShortcutButton(key: "⌘S",  label: "Save")   { store.onSave?() }
-                ShortcutButton(key: "⌘↩",  label: "Both")   { store.onCopyAndSave?() }
-                ShortcutButton(key: "Esc", label: "Cancel")  { store.onCancel?() }
+            if isCompact {
+                // Narrow capture: collapse actions into a single dropdown menu
+                Menu {
+                    Button("Copy  ⌘C")         { store.onCopy?() }
+                    Button("Save  ⌘S")         { store.onSave?() }
+                    Button("Copy & Save  ⌘↩")  { store.onCopyAndSave?() }
+                    Divider()
+                    Button("Cancel  Esc", role: .destructive) { store.onCancel?() }
+                } label: {
+                    Image(systemName: "ellipsis.circle")
+                        .font(.system(size: 18))
+                        .foregroundStyle(Color.primary)
+                }
+                .menuStyle(.borderlessButton)
+                .fixedSize()
+                .help("Actions")
+                .padding(.trailing, 8)
+            } else {
+                // Wide capture: inline shortcut buttons
+                HStack(spacing: 12) {
+                    ShortcutButton(key: "⌘C",  label: "Copy")   { store.onCopy?() }
+                    ShortcutButton(key: "⌘S",  label: "Save")   { store.onSave?() }
+                    ShortcutButton(key: "⌘↩",  label: "Both")   { store.onCopyAndSave?() }
+                    ShortcutButton(key: "Esc", label: "Cancel")  { store.onCancel?() }
+                }
+                .padding(.trailing, 6)
             }
-            .padding(.trailing, 6)
         }
         .padding(.horizontal, 12)
         .frame(height: 44)

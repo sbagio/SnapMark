@@ -22,14 +22,20 @@ check-deps:
 	@./scripts/check-package-ages.sh $(MIN_AGE_DAYS)
 	@echo ""
 
+# ── Test ───────────────────────────────────────────────────────────────────
+
+.PHONY: test
+test:
+	@echo "▶ Running unit tests…"
+	@swift run SnapMarkTests 2>&1
+
 # ── Build ──────────────────────────────────────────────────────────────────
-# Uses swift build + bundle assembly (no Xcode required).
-# The age check is embedded inside build-app.sh.
+# Tests run before every build so regressions are caught before assembly.
 
 APP_BUNDLE := ./SnapMark.app
 
 .PHONY: build
-build:
+build: test
 	@./scripts/build-app.sh release
 
 .PHONY: build-debug
@@ -79,8 +85,9 @@ uninstall:
 .PHONY: help
 help:
 	@echo "SnapMark Build Targets"
-	@echo "  make build             — security check → Release build"
-	@echo "  make build-debug       — security check → Debug build"
+	@echo "  make test              — run unit tests only"
+	@echo "  make build             — tests → Release build"
+	@echo "  make build-debug       — tests → Debug build"
 	@echo "  make install           — build + copy to /Applications"
 	@echo "  make run               — install + launch"
 	@echo "  make check-deps        — run age gate only (MIN_AGE_DAYS=7)"
