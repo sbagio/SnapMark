@@ -8,9 +8,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private let hotkeyManager = HotkeyManager()
     private var overlayController: OverlayWindowController?
     private var annotationControllers: [AnnotationWindowController] = []
-
-    // Kept as a property so NSMenuDelegate can update it
-    private var historyMenu: NSMenu!
+    private var menu: NSMenu!
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         NSApp.setActivationPolicy(.accessory)
@@ -39,34 +37,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             button.image?.isTemplate = true
         }
 
-        let menu = NSMenu()
+        menu = NSMenu()
         menu.delegate = self
-
-        let captureItem = NSMenuItem(
-            title: "Capture  ⌘⇧2",
-            action: #selector(startCapture),
-            keyEquivalent: ""
-        )
-        captureItem.target = self
-        menu.addItem(captureItem)
-
-        menu.addItem(.separator())
-
-        // Recent Screenshots submenu — rebuilt each time the menu opens
-        let recentItem = NSMenuItem(title: "Recent Screenshots", action: nil, keyEquivalent: "")
-        historyMenu = NSMenu()
-        recentItem.submenu = historyMenu
-        menu.addItem(recentItem)
-
-        menu.addItem(.separator())
-
-        menu.addItem(NSMenuItem(
-            title: "Quit SnapMark",
-            action: #selector(NSApplication.terminate(_:)),
-            keyEquivalent: "q"
-        ))
-
         statusItem.menu = menu
+        // Populated fresh each open via menuNeedsUpdate
     }
 
     // MARK: - Capture Flow
@@ -106,14 +80,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     @objc private func openHistoryItem(_ sender: NSMenuItem) {
         guard let url = sender.representedObject as? URL else { return }
         guard
-            let data     = try? Data(contentsOf: url),
-            let nsImage  = NSImage(data: data),
-            let cgImage  = nsImage.cgImage(forProposedRect: nil, context: nil, hints: nil)
+            let data    = try? Data(contentsOf: url),
+            let nsImage = NSImage(data: data),
+            let cgImage = nsImage.cgImage(forProposedRect: nil, context: nil, hints: nil)
         else { return }
 
         let size = CGSize(width: cgImage.width, height: cgImage.height)
-        let screenRect = CGRect(origin: .zero, size: size)
-        openInEditor(cgImage: cgImage, screenRect: screenRect)
+        openInEditor(cgImage: cgImage, screenRect: CGRect(origin: .zero, size: size))
     }
 }
 
@@ -121,25 +94,42 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
 extension AppDelegate: NSMenuDelegate {
     func menuNeedsUpdate(_ menu: NSMenu) {
-        // Only rebuild the history submenu
-        guard menu === historyMenu else { return }
+        menu.removeAllItems()
 
-        historyMenu.removeAllItems()
+        // Capture
+        let captureItem = NSMenuItem(title: "Capture  ⌘⇧2", action: #selector(startCapture), keyEquivalent: "")
+        captureItem.target = self
+        menu.addItem(captureItem)
 
-        let items = HistoryStore.shared.loadItems()
-        if items.isEmpty {
-            let empty = NSMenuItem(title: "No recent screenshots", action: nil, keyEquivalent: "")
-            empty.isEnabled = false
-            historyMenu.addItem(empty)
-            return
+        // History items — inline, no submenu
+        let history = HistoryStore.shared.loadItems()
+        if !history.isEmpty {
+            menu.addItem(.separator())
+            for item in history {
+                let name = item.url.lastPathComponent
+                let ext  = item.url.pathExtension
+                let stem = item.url.deletingPathExtension().lastPathComponent
+                let maxLen = 30   // fits "SnapMark-2026-04-10-184621.png"
+                let title: String
+                if name.count <= maxLen {
+                    title = name
+                } else {
+                    let extPart  = ext.isEmpty ? "" : ".\(ext)"
+                    let stemMax  = maxLen - extPart.count - 1   // 1 for "…"
+                    title = String(stem.prefix(stemMax)) + "…" + extPart
+                }
+                let menuItem = NSMenuItem(title: title, action: #selector(openHistoryItem(_:)), keyEquivalent: "")
+                menuItem.target = self
+                menuItem.representedObject = item.url
+                menu.addItem(menuItem)
+            }
         }
 
-        for item in items {
-            let title = HistoryStore.shared.formattedDate(item.date)
-            let menuItem = NSMenuItem(title: title, action: #selector(openHistoryItem(_:)), keyEquivalent: "")
-            menuItem.target = self
-            menuItem.representedObject = item.url
-            historyMenu.addItem(menuItem)
-        }
+        menu.addItem(.separator())
+        menu.addItem(NSMenuItem(
+            title: "Quit SnapMark",
+            action: #selector(NSApplication.terminate(_:)),
+            keyEquivalent: "q"
+        ))
     }
 }

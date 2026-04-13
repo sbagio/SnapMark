@@ -150,9 +150,15 @@ final class SelectionOverlayView: NSView {
     override func mouseDragged(with event: NSEvent) {
         guard let start = startPoint else { return }
         isDragging = true
-        let current = convert(event.locationInWindow, from: nil)
-        cursorPoint = current
-        currentRect = normalizedRect(from: start, to: current)
+        // Clamp to this view's bounds so the selection can never extend
+        // onto a second display, even if the cursor crosses the screen edge.
+        let raw = convert(event.locationInWindow, from: nil)
+        let clamped = CGPoint(
+            x: max(bounds.minX, min(bounds.maxX, raw.x)),
+            y: max(bounds.minY, min(bounds.maxY, raw.y))
+        )
+        cursorPoint = clamped
+        currentRect = normalizedRect(from: start, to: clamped)
         needsDisplay = true
     }
 
