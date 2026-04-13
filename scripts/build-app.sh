@@ -47,11 +47,8 @@ mkdir -p "$APP_BUNDLE/Contents/Resources"
 # Binary
 cp "$BUILD_DIR/$BINARY_NAME" "$APP_BUNDLE/Contents/MacOS/$BINARY_NAME"
 
-# Info.plist — substitute build variables
-sed \
-    -e "s/\$(EXECUTABLE_NAME)/$BINARY_NAME/g" \
-    -e "s/\$(PRODUCT_BUNDLE_IDENTIFIER)/$BUNDLE_ID/g" \
-    "SnapMark/Info.plist" > "$APP_BUNDLE/Contents/Info.plist"
+# Info.plist — values are hardcoded; copy directly, no substitution needed
+cp "SnapMark/Info.plist" "$APP_BUNDLE/Contents/Info.plist"
 
 # Build AppIcon.icns using iconutil (simpler and more reliable than actool).
 # Source PNGs live in Assets.xcassets/AppIcon.appiconset/ and are pre-generated
@@ -88,13 +85,19 @@ fi
 # Use the stable self-signed certificate so TCC persists the Screen Recording
 # grant across rebuilds. Fall back to ad-hoc only if cert isn't set up yet.
 CERT_NAME="SnapMark Dev"
+ENTITLEMENTS="$PROJECT_DIR/SnapMark/Resources/SnapMark.entitlements"
+
 if security find-certificate -c "$CERT_NAME" \
         "$HOME/Library/Keychains/login.keychain-db" &>/dev/null; then
     echo "▶ Signing with certificate '$CERT_NAME'…"
-    codesign --force --sign "$CERT_NAME" "$APP_BUNDLE"
+    codesign --force --sign "$CERT_NAME" \
+        --entitlements "$ENTITLEMENTS" \
+        "$APP_BUNDLE"
 else
     echo "▶ Signing (ad-hoc — run ./scripts/setup-signing.sh for persistent TCC grants)…"
-    codesign --force --sign "-" "$APP_BUNDLE"
+    codesign --force --sign "-" \
+        --entitlements "$ENTITLEMENTS" \
+        "$APP_BUNDLE"
 fi
 
 # ── 5. Strip quarantine ──────────────────────────────────────────────────────

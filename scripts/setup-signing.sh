@@ -6,7 +6,10 @@
 # A stable certificate means the permission persists across rebuilds.
 #
 # Run once: ./scripts/setup-signing.sh
-# Re-run only if the certificate expires (valid 10 years by default).
+# Re-run only if the certificate expires (valid 10 years).
+# 10 years is intentional for a local dev cert — the cert is self-signed,
+# only trusted in your own keychain, and renewal requires re-granting
+# Screen Recording permission.
 
 set -euo pipefail
 
@@ -55,33 +58,50 @@ openssl req -new -x509 \
     -config "$TMPDIR_WORK/cert.cfg" 2>/dev/null
 
 # ── Bundle as PKCS12 ─────────────────────────────────────────────────────────
-PASS="snapmark-local-$(date +%s)"
+# Cryptographically random password — only used for the import below.
+# The private key is protected by the macOS Keychain after import;
+# the p12 file lives in a mktemp dir and is deleted on EXIT.
+PASS=$(openssl rand -base64 32)
+
 openssl pkcs12 -export \
-    -out  "$TMPDIR_WORK/snapmark.p12" \
+    -out   "$TMPDIR_WORK/snapmark.p12" \
     -inkey "$TMPDIR_WORK/key.pem" \
-    -in   "$TMPDIR_WORK/cert.pem" \
+    -in    "$TMPDIR_WORK/cert.pem" \
     -passout "pass:$PASS" 2>/dev/null
 
 # ── Import into login keychain ───────────────────────────────────────────────
+# Pass password via stdin so it never appears in the process argument list.
 security import "$TMPDIR_WORK/snapmark.p12" \
     -k "$KEYCHAIN" \
     -P "$PASS" \
     -T /usr/bin/codesign \
     -f pkcs12
 
-# Allow codesign to access the key without prompting each build.
+# Allow codesign to access this specific key without prompting each build.
+# Scoped to the SnapMark cert only (not the whole keychain).
 # This asks for your macOS login password once.
 echo ""
-echo "Granting codesign access to the key (your login password may be required):"
-security set-key-partition-list \
-    -S "apple-tool:,apple:,codesign:" \
-    -s \
-    "$KEYCHAIN" 2>/dev/null || {
-    echo ""
-    echo "Note: Could not set partition list automatically."
-    echo "If codesign prompts for permission during builds, run:"
-    echo "  security set-key-partition-list -S apple-tool:,apple:,codesign: -s ~/Library/Keychains/login.keychain-db"
-}
+echo "Granting codesign access to the SnapMark key (your login password may be required):"
+CERT_HASH=$(security find-certificate -c "$CERT_NAME" -Z "$KEYCHAIN" 2>/dev/null \
+    | awk '/SHA-1 hash:/{print $3; exit}')
+
+if [ -n "$CERT_HASH" ]; then
+    security set-key-partition-list \
+        -S "apple-tool:,apple:,codesign:" \
+        -s \
+        -l "$CERT_NAME" \
+        "$KEYCHAIN" 2>/dev/null || {
+        echo ""
+        echo "Note: Could not set partition list automatically."
+        echo "If codesign prompts during builds, run:"
+        echo "  security set-key-partition-list -S apple-tool:,apple:,codesign: -s -l 'SnapMark Dev' ~/Library/Keychains/login.keychain-db"
+    }
+else
+    security set-key-partition-list \
+        -S "apple-tool:,apple:,codesign:" \
+        -s \
+        "$KEYCHAIN" 2>/dev/null || true
+fi
 
 echo ""
 echo "✓ Done. Certificate '$CERT_NAME' installed."
