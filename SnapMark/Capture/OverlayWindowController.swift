@@ -84,7 +84,13 @@ final class OverlayWindowController: SelectionOverlayViewDelegate {
                 let image = try await self.captureService.captureImage(cgRect: screenRect)
                 self.onCaptureComplete?(image, screenRect)
             } catch {
-                NSLog("SnapMark: Capture failed: \(error)")
+                NSLog("SnapMark: Capture failed: %@", "\(error)")
+                let alert = NSAlert()
+                alert.messageText = "Capture Failed"
+                alert.informativeText = error.localizedDescription
+                alert.alertStyle = .warning
+                alert.addButton(withTitle: "OK")
+                alert.runModal()
             }
         }
     }

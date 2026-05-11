@@ -85,7 +85,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             let cgImage = nsImage.cgImage(forProposedRect: nil, context: nil, hints: nil)
         else { return }
 
-        let size = CGSize(width: cgImage.width, height: cgImage.height)
+        // Use NSImage.size (logical points) not cgImage.width/height (pixels)
+        // so the editor window is correctly sized on Retina displays.
+        let size = nsImage.size
         openInEditor(cgImage: cgImage, screenRect: CGRect(origin: .zero, size: size))
     }
 }

@@ -145,35 +145,44 @@ scrollView.translatesAutoresizingMaskIntoConstraints = false
     }
 
     private func handleCopy() {
-        let img = compositeImage()
-        ExportService.copyToClipboard(img)
-        HistoryStore.shared.save(img)
-        closeWindow()
+        export(copy: true, save: false)
     }
 
     private func handleSave() {
+        export(copy: false, save: true)
+    }
+
+    private func handleCopyAndSave() {
+        export(copy: true, save: true)
+    }
+
+    private func export(copy: Bool, save: Bool) {
         let img = compositeImage()
+        if copy { ExportService.copyToClipboard(img) }
         HistoryStore.shared.save(img)
-        do {
-            let url = try ExportService.saveToDisk(img)
-            NSLog("SnapMark: Saved to %@", url.path)
-        } catch {
-            NSLog("SnapMark: Save failed: %@", error.localizedDescription)
+        if save {
+            do {
+                let url = try ExportService.saveToDisk(img)
+                NSLog("SnapMark: Saved to %@", url.path)
+            } catch {
+                showError("Save Failed", detail: error.localizedDescription)
+                return
+            }
         }
         closeWindow()
     }
 
-    private func handleCopyAndSave() {
-        let img = compositeImage()
-        ExportService.copyToClipboard(img)
-        HistoryStore.shared.save(img)
-        do {
-            let url = try ExportService.saveToDisk(img)
-            NSLog("SnapMark: Saved to %@", url.path)
-        } catch {
-            NSLog("SnapMark: Save failed: %@", error.localizedDescription)
+    private func showError(_ title: String, detail: String) {
+        let alert = NSAlert()
+        alert.messageText = title
+        alert.informativeText = detail
+        alert.alertStyle = .warning
+        alert.addButton(withTitle: "OK")
+        if let window = view.window {
+            alert.beginSheetModal(for: window)
+        } else {
+            alert.runModal()
         }
-        closeWindow()
     }
 
     private func closeWindow() {

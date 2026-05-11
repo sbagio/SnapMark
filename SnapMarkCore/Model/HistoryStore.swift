@@ -11,19 +11,27 @@ public final class HistoryStore {
     public init() {
         let appSupport = FileManager.default.urls(
             for: .applicationSupportDirectory, in: .userDomainMask
-        ).first!
+        ).first ?? FileManager.default.temporaryDirectory
         historyDir = appSupport.appendingPathComponent("SnapMark/History")
-        try? FileManager.default.createDirectory(
-            at: historyDir, withIntermediateDirectories: true
-        )
+        do {
+            try FileManager.default.createDirectory(
+                at: historyDir, withIntermediateDirectories: true
+            )
+        } catch {
+            NSLog("SnapMark: Failed to create history directory: %@", error.localizedDescription)
+        }
     }
 
     /// For testing — supply a temp directory instead of the default app-support dir.
     public init(historyDir: URL) {
         self.historyDir = historyDir
-        try? FileManager.default.createDirectory(
-            at: historyDir, withIntermediateDirectories: true
-        )
+        do {
+            try FileManager.default.createDirectory(
+                at: historyDir, withIntermediateDirectories: true
+            )
+        } catch {
+            NSLog("SnapMark: Failed to create history directory: %@", error.localizedDescription)
+        }
     }
 
     // MARK: - Save
@@ -38,9 +46,16 @@ public final class HistoryStore {
             let tiff   = image.tiffRepresentation,
             let bitmap = NSBitmapImageRep(data: tiff),
             let png    = bitmap.representation(using: .png, properties: [:])
-        else { return }
+        else {
+            NSLog("SnapMark: Failed to encode history image as PNG")
+            return
+        }
 
-        try? png.write(to: url)
+        do {
+            try png.write(to: url)
+        } catch {
+            NSLog("SnapMark: Failed to write history image: %@", error.localizedDescription)
+        }
         pruneOldItems()
     }
 

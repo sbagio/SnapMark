@@ -2,6 +2,21 @@
 
 All notable changes to SnapMark are documented in this file.
 
+## [1.0.2] - 2026-05-11
+
+### Fixed
+- Exported/clipboard images now use full Retina resolution instead of being
+  downscaled to 1x. On 2x displays, exported PNGs are now twice the resolution.
+- History items opened in editor at correct logical size instead of 2x pixel
+  dimensions on Retina displays.
+- HistoryStore no longer silently swallows save failures — errors are logged.
+- Capture and save failures now show user-facing alert dialogs instead of
+  failing silently.
+
+### Changed
+- Consolidated duplicate export logic in AnnotationViewController.
+- Replaced force-unwrap on application support directory with safe fallback.
+
 ## [1.0.1] - 2026-05-11
 
 ### Fixed

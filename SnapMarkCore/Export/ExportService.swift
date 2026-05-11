@@ -11,10 +11,14 @@ public struct ExportService {
         annotations: [AnnotationItem],
         canvasSize: CGSize
     ) -> NSImage {
+        // Use the captured image's native resolution so Retina captures
+        // export at full quality instead of being downscaled to 1x.
+        let pixelWidth = baseImage.width
+        let pixelHeight = baseImage.height
         guard let rep = NSBitmapImageRep(
             bitmapDataPlanes: nil,
-            pixelsWide: Int(canvasSize.width),
-            pixelsHigh: Int(canvasSize.height),
+            pixelsWide: pixelWidth,
+            pixelsHigh: pixelHeight,
             bitsPerSample: 8,
             samplesPerPixel: 4,
             hasAlpha: true,
@@ -25,6 +29,8 @@ public struct ExportService {
         ) else {
             return NSImage(cgImage: baseImage, size: canvasSize)
         }
+        // Setting logical size different from pixel dimensions makes
+        // NSGraphicsContext apply the backing scale automatically.
         rep.size = canvasSize
 
         NSGraphicsContext.saveGraphicsState()
