@@ -58,7 +58,7 @@ final class SelectionOverlayView: NSView {
         //    scrim sits on top so the whole screen reads as "inactive" until
         //    the user punches through a selection.
         drawFrozenImage(in: bounds, ctx: ctx)
-        ctx.setFillColor(NSColor.black.withAlphaComponent(0.50).cgColor)
+        ctx.setFillColor(NSColor.black.withAlphaComponent(DimmingOverlayWindow.dimAlpha).cgColor)
         ctx.fill(bounds)
 
         if isDragging, let rect = currentRect, rect.width > 2, rect.height > 2 {

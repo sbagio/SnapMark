@@ -1,6 +1,7 @@
 import ScreenCaptureKit
 import CoreGraphics
 import AppKit
+import SnapMarkCore
 
 /// Captures a single-frame screenshot of a CGRect region.
 actor ScreenCaptureService {
@@ -45,15 +46,12 @@ actor ScreenCaptureService {
         guard let screen = NSScreen.screens.first(where: { $0.frame.intersects(cgRect) }) else {
             throw CaptureError.noDisplay
         }
-        let screenFrame = screen.frame
         let backingScale = screen.backingScaleFactor
 
         // 4. Convert selection from AppKit screen coordinates (Y-up) to
         //    display-local coordinates (Y-down, origin at top-left of display).
-        let localX = cgRect.origin.x - screenFrame.origin.x
-        let localY = screenFrame.maxY - cgRect.maxY
-        let sourceRect = CGRect(x: localX, y: localY,
-                                width: cgRect.width, height: cgRect.height)
+        //    Shared with the frozen-bitmap crop via CaptureGeometry.
+        let sourceRect = CaptureGeometry.localRect(for: cgRect, screenFrame: screen.frame)
 
         // 5. Configure capture to grab only the selected region
         let filter = SCContentFilter(display: display, excludingWindows: [])

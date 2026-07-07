@@ -37,7 +37,7 @@ final class OverlayWindowController: SelectionOverlayViewDelegate {
             } else {
                 let dimView = NSView(frame: screen.frame)
                 dimView.wantsLayer = true
-                dimView.layer?.backgroundColor = NSColor.black.withAlphaComponent(0.50).cgColor
+                dimView.layer?.backgroundColor = NSColor.black.withAlphaComponent(DimmingOverlayWindow.dimAlpha).cgColor
                 win.contentView = dimView
                 win.ignoresMouseEvents = true
                 win.orderFront(nil)

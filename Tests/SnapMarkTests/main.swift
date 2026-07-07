@@ -103,6 +103,15 @@ do {
     check("offset display: x is display-local",  pxOff.origin.x == 100)
     check("offset display: y is display-local",  pxOff.origin.y == 50)
 
+    // localRect is the point-space (unscaled) source of pixelRect — the shared
+    // flip used by both live capture and frozen cropping.
+    let local = CaptureGeometry.localRect(for: sel, screenFrame: frame1x)
+    check("localRect: x display-local", local.origin.x == 100)
+    check("localRect: y flipped",       local.origin.y == 50)
+    check("localRect: size preserved",  local.width == 200 && local.height == 100)
+    check("localRect == pixelRect at 1x",
+          CaptureGeometry.pixelRect(for: sel, screenFrame: frame1x, backingScale: 1) == local)
+
     // End-to-end crop against a real bitmap with a known pattern:
     // top-left quadrant white, rest black, in a 100x100 (1x) image.
     let cs = CGColorSpaceCreateDeviceRGB()
@@ -129,6 +138,62 @@ do {
         ctx.draw(c, in: CGRect(x: -24, y: -24, width: 50, height: 50)) // center pixel of the 50x50 crop
         let p = ctx.data!.bindMemory(to: UInt8.self, capacity: 4)
         check("crop: extracted the white top-left region", p[0] > 200 && p[1] > 200 && p[2] > 200)
+    }
+}
+
+// ─── ExportService / AnnotationRenderer ─────────────────────────────────────────
+
+section("ExportService / AnnotationRenderer")
+do {
+    func solidImage(_ w: Int, _ h: Int, white: CGFloat) -> CGImage {
+        let cs = CGColorSpaceCreateDeviceRGB()
+        let ctx = CGContext(data: nil, width: w, height: h, bitsPerComponent: 8,
+                            bytesPerRow: 0, space: cs,
+                            bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue)!
+        ctx.setFillColor(CGColor(red: white, green: white, blue: white, alpha: 1))
+        ctx.fill(CGRect(x: 0, y: 0, width: w, height: h))
+        return ctx.makeImage()!
+    }
+
+    // compositeImage must preserve the base image's NATIVE pixel dimensions even
+    // when the logical canvas size is smaller (Retina), so exports stay sharp.
+    let base = solidImage(200, 160, white: 1)   // 200×160 px
+    let canvas = CGSize(width: 100, height: 80)  // 100×80 pt (2x)
+    let composed = ExportService.compositeImage(baseImage: base, annotations: [], canvasSize: canvas)
+    let rep = composed.representations.first as? NSBitmapImageRep
+    check("composite: preserves native pixel width",  rep?.pixelsWide == 200)
+    check("composite: preserves native pixel height", rep?.pixelsHigh == 160)
+
+    // A filled highlight over the whole canvas must change the center pixel
+    // away from the white base.
+    let hl = AnnotationItem.highlight(.init(rect: CGRect(x: 0, y: 0, width: canvas.width, height: canvas.height),
+                                            color: .red))
+    let drawn = ExportService.compositeImage(baseImage: base, annotations: [hl], canvasSize: canvas)
+    let drawnRep = drawn.representations.first as? NSBitmapImageRep
+    let center = drawnRep?.colorAt(x: 100, y: 80)
+    check("composite: annotation changes pixels",
+          (center?.greenComponent ?? 1.0) < 0.95)
+
+    // A degenerate (tail == head) arrow must not crash and still produce output.
+    let dot = CGPoint(x: 50, y: 40)
+    let degenerate = AnnotationItem.arrow(.init(tail: dot, head: dot, color: .red, strokeWidth: 3))
+    let safe = ExportService.compositeImage(baseImage: base, annotations: [degenerate], canvasSize: canvas)
+    check("composite: zero-length arrow doesn't crash",
+          (safe.representations.first as? NSBitmapImageRep)?.pixelsWide == 200)
+
+    // saveToDisk writes a timestamped PNG into an injectable directory.
+    let dir = FileManager.default.temporaryDirectory
+        .appendingPathComponent("SnapMarkExportTests-\(UUID().uuidString)")
+    defer { try? FileManager.default.removeItem(at: dir) }
+    let img = NSImage(cgImage: base, size: canvas)
+    if let url = try? ExportService.saveToDisk(img, directory: dir) {
+        check("saveToDisk: writes into the given directory",
+              url.deletingLastPathComponent().standardizedFileURL == dir.standardizedFileURL)
+        check("saveToDisk: PNG extension",        url.pathExtension == "png")
+        check("saveToDisk: SnapMark- prefix",     url.lastPathComponent.hasPrefix("SnapMark-"))
+        check("saveToDisk: file exists on disk",  FileManager.default.fileExists(atPath: url.path))
+    } else {
+        check("saveToDisk: succeeded", false)
     }
 }
 
@@ -167,6 +232,16 @@ do {
     check("onAnnotationsChanged fires on add",   callCount == 1)
     store.clear()
     check("onAnnotationsChanged fires on clear", callCount == 2)
+}
+
+do {
+    let store = AnnotationStore()
+    var toolChanges = 0
+    store.onToolChanged = { toolChanges += 1 }
+    store.currentTool = .text
+    check("onToolChanged fires on tool change", toolChanges == 1)
+    store.currentTool = .text  // same value still fires didSet
+    check("onToolChanged fires again on reassign", toolChanges == 2)
 }
 
 // ─── HistoryStore ─────────────────────────────────────────────────────────────

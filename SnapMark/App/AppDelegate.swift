@@ -84,9 +84,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         // fine. If the capture actually throws, THEN we show the alert.
 
         let mouseLocation = NSEvent.mouseLocation
-        let cursorScreen = NSScreen.screens.first(where: {
+        // `NSScreen.screens` can be empty (all displays asleep/locked) — the very
+        // case the fallback chain exists to survive — so never force-index it.
+        guard let cursorScreen = NSScreen.screens.first(where: {
             $0.frame.contains(mouseLocation)
-        }) ?? NSScreen.main ?? NSScreen.screens[0]
+        }) ?? NSScreen.main ?? NSScreen.screens.first else {
+            NSLog("SnapMark: No active display available for capture")
+            return
+        }
 
         Task { @MainActor in
             // Freeze the screen BEFORE presenting any overlay, so the bitmap
@@ -138,7 +143,16 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             let data    = try? Data(contentsOf: url),
             let nsImage = NSImage(data: data),
             let cgImage = nsImage.cgImage(forProposedRect: nil, context: nil, hints: nil)
-        else { return }
+        else {
+            NSLog("SnapMark: Could not open history item at %@", url.path)
+            let alert = NSAlert()
+            alert.messageText = "Couldn't Open Screenshot"
+            alert.informativeText = "The file may have been moved or deleted:\n\(url.lastPathComponent)"
+            alert.alertStyle = .warning
+            alert.addButton(withTitle: "OK")
+            alert.runModal()
+            return
+        }
 
         // Use NSImage.size (logical points) not cgImage.width/height (pixels)
         // so the editor window is correctly sized on Retina displays.

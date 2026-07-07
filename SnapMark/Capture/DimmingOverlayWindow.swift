@@ -4,6 +4,9 @@ import AppKit
 /// One instance is created per NSScreen.
 final class DimmingOverlayWindow: NSWindow {
 
+    /// Opacity of the black scrim over inactive screen area during capture.
+    static let dimAlpha: CGFloat = 0.50
+
     init(screen: NSScreen) {
         super.init(
             contentRect: screen.frame,

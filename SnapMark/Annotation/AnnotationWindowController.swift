@@ -37,7 +37,8 @@ final class AnnotationWindowController: NSWindowController {
         super.init(window: win)
 
         win.delegate = self
-        win.center()
+        // Origin above already centers on the visible frame (menu-bar/Dock aware);
+        // NSWindow.center() would override it with a less-correct placement.
     }
 
     required init?(coder: NSCoder) { fatalError() }

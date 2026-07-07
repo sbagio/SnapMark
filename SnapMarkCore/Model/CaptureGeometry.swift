@@ -4,25 +4,39 @@ import CoreGraphics
 /// No ScreenCaptureKit / Carbon dependency, so it lives in Core and is tested.
 public enum CaptureGeometry {
 
-    /// The pixel rect (top-left origin, Y-down) within a full-screen bitmap
-    /// that corresponds to `screenRect` given in AppKit screen coordinates
-    /// (Y-up). `screenFrame` is the captured screen's frame in the same AppKit
-    /// space; `backingScale` is its `backingScaleFactor`.
+    /// The point-space rect within a display, converting `screenRect` from
+    /// AppKit screen coordinates (Y-up) to display-local coordinates (Y-down,
+    /// origin at the display's top-left). `screenFrame` is the display's frame
+    /// in the same AppKit space.
     ///
-    /// This mirrors the `sourceRect` math used when capturing a live region,
-    /// so a frozen-bitmap crop lands on exactly the same pixels.
+    /// This is the single source of truth for the capture coordinate flip —
+    /// both live-region capture (`SCStreamConfiguration.sourceRect`) and
+    /// frozen-bitmap cropping build on it, so they can't drift apart.
+    public static func localRect(
+        for screenRect: CGRect,
+        screenFrame: CGRect
+    ) -> CGRect {
+        CGRect(
+            x: screenRect.origin.x - screenFrame.origin.x,
+            y: screenFrame.maxY - screenRect.maxY,
+            width: screenRect.width,
+            height: screenRect.height
+        )
+    }
+
+    /// The pixel rect (top-left origin, Y-down) within a full-screen bitmap
+    /// captured at `backingScale` that corresponds to `screenRect`.
     public static func pixelRect(
         for screenRect: CGRect,
         screenFrame: CGRect,
         backingScale: CGFloat
     ) -> CGRect {
-        let localX = screenRect.origin.x - screenFrame.origin.x
-        let localY = screenFrame.maxY - screenRect.maxY
+        let local = localRect(for: screenRect, screenFrame: screenFrame)
         return CGRect(
-            x: localX * backingScale,
-            y: localY * backingScale,
-            width: screenRect.width * backingScale,
-            height: screenRect.height * backingScale
+            x: local.origin.x * backingScale,
+            y: local.origin.y * backingScale,
+            width: local.width * backingScale,
+            height: local.height * backingScale
         )
     }
 
