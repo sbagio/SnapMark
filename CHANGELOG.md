@@ -2,6 +2,23 @@
 
 All notable changes to SnapMark are documented in this file.
 
+## [1.1.0] - 2026-07-07
+
+### Added
+- Freeze-frame capture: ⌘⇧2 now grabs the screen the instant the hotkey fires,
+  before the selection overlay appears, and crops the selection from that frozen
+  bitmap. Transient UI that would otherwise vanish — open dropdowns/menus, a live
+  screen share mid-frame — is preserved in the capture even though the live UI
+  changes once the overlay takes focus.
+- `CaptureGeometry` in SnapMarkCore: unit-tested crop geometry (AppKit Y-up →
+  display-local Y-down + Retina scaling) shared by the capture pipeline.
+
+### Changed
+- Permission handling no longer preflights `CGPreflightScreenCaptureAccess` — that
+  flag reads stale after each re-sign and falsely prompted when rights were fine.
+  Capture is attempted directly and the alert (with a Settings deep link) shows
+  only on a genuine failure.
+
 ## [1.0.2] - 2026-05-11
 
 ### Fixed
