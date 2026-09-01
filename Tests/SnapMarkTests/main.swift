@@ -197,6 +197,64 @@ do {
     }
 }
 
+// ─── Preferences ────────────────────────────────────────────────────────────────
+
+section("Preferences")
+do {
+    let suiteName = "SnapMarkTests-\(UUID().uuidString)"
+    let d = UserDefaults(suiteName: suiteName)!
+    defer { UserDefaults.standard.removePersistentDomain(forName: suiteName) }
+
+    check("unset: falls back to ~/Screenshots",
+          Preferences.saveFolder(defaults: d).lastPathComponent == "Screenshots")
+    check("unset: reports no custom folder", !Preferences.hasCustomSaveFolder(defaults: d))
+
+    // A real, existing directory — the getter validates before returning it.
+    let custom = FileManager.default.temporaryDirectory
+        .appendingPathComponent("SnapMarkPrefs-\(UUID().uuidString)")
+    try? FileManager.default.createDirectory(at: custom, withIntermediateDirectories: true)
+    defer { try? FileManager.default.removeItem(at: custom) }
+
+    Preferences.setSaveFolder(custom, defaults: d)
+    check("set: returns the chosen folder",
+          Preferences.saveFolder(defaults: d).path == custom.path)
+    check("set: reports a custom folder", Preferences.hasCustomSaveFolder(defaults: d))
+
+    // A folder that was chosen and later deleted must not break saving.
+    let vanished = FileManager.default.temporaryDirectory
+        .appendingPathComponent("SnapMarkGone-\(UUID().uuidString)")
+    Preferences.setSaveFolder(vanished, defaults: d)
+    check("missing folder: falls back to default",
+          Preferences.saveFolder(defaults: d).lastPathComponent == "Screenshots")
+
+    // A file where a directory is expected is equally invalid.
+    let file = FileManager.default.temporaryDirectory
+        .appendingPathComponent("SnapMarkFile-\(UUID().uuidString).txt")
+    FileManager.default.createFile(atPath: file.path, contents: Data("x".utf8))
+    defer { try? FileManager.default.removeItem(at: file) }
+    Preferences.setSaveFolder(file, defaults: d)
+    check("file instead of folder: falls back to default",
+          Preferences.saveFolder(defaults: d).lastPathComponent == "Screenshots")
+
+    Preferences.setSaveFolder(custom, defaults: d)
+    Preferences.resetSaveFolder(defaults: d)
+    check("reset: back to default",
+          Preferences.saveFolder(defaults: d).lastPathComponent == "Screenshots")
+    check("reset: no custom folder reported", !Preferences.hasCustomSaveFolder(defaults: d))
+
+    // End-to-end: a save lands in whatever folder the preference resolves to.
+    Preferences.setSaveFolder(custom, defaults: d)
+    let img = NSImage(size: NSSize(width: 4, height: 4), flipped: false) { r in
+        NSColor.blue.setFill(); r.fill(); return true
+    }
+    if let saved = try? ExportService.saveToDisk(img, directory: Preferences.saveFolder(defaults: d)) {
+        check("save lands in the configured folder",
+              saved.deletingLastPathComponent().standardizedFileURL == custom.standardizedFileURL)
+    } else {
+        check("save lands in the configured folder", false)
+    }
+}
+
 // ─── AnnotationStore ──────────────────────────────────────────────────────────
 
 section("AnnotationStore")

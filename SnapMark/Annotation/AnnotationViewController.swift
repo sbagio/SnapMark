@@ -177,7 +177,7 @@ final class AnnotationViewController: NSViewController {
         HistoryStore.shared.save(img)
         if save {
             do {
-                let url = try ExportService.saveToDisk(img)
+                let url = try ExportService.saveToDisk(img, directory: Preferences.saveFolder())
                 NSLog("SnapMark: Saved to %@", url.path)
             } catch {
                 showError("Save Failed", detail: error.localizedDescription)

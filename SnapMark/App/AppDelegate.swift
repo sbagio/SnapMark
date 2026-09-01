@@ -135,6 +135,32 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         annotationController.showWindow(nil)
     }
 
+    // MARK: - Save Folder
+
+    @objc private func chooseSaveFolder() {
+        let panel = NSOpenPanel()
+        panel.canChooseDirectories = true
+        panel.canChooseFiles = false
+        panel.allowsMultipleSelection = false
+        panel.canCreateDirectories = true
+        panel.directoryURL = Preferences.saveFolder()
+        panel.message = "Choose where SnapMark saves screenshots."
+        panel.prompt = "Choose"
+
+        // An accessory app is never the active app, so the panel would open behind
+        // whatever is in front unless we activate first.
+        NSApp.activate(ignoringOtherApps: true)
+
+        guard panel.runModal() == .OK, let url = panel.url else { return }
+        Preferences.setSaveFolder(url)
+        NSLog("SnapMark: Save folder set to %@", url.path)
+    }
+
+    @objc private func resetSaveFolder() {
+        Preferences.resetSaveFolder()
+        NSLog("SnapMark: Save folder reset to %@", Preferences.saveFolder().path)
+    }
+
     // MARK: - Open History Item
 
     @objc private func openHistoryItem(_ sender: NSMenuItem) {
@@ -194,6 +220,29 @@ extension AppDelegate: NSMenuDelegate {
                 menuItem.representedObject = item.url
                 menu.addItem(menuItem)
             }
+        }
+
+        menu.addItem(.separator())
+
+        let folder = Preferences.saveFolder()
+        let folderItem = NSMenuItem(
+            title: "Default Save Folder\u{2026}",
+            action: #selector(chooseSaveFolder),
+            keyEquivalent: ""
+        )
+        folderItem.target = self
+        // The path is long and changes; a tooltip shows it without widening the menu.
+        folderItem.toolTip = folder.path
+        menu.addItem(folderItem)
+
+        if Preferences.hasCustomSaveFolder() {
+            let resetItem = NSMenuItem(
+                title: "Reset Save Folder to Default",
+                action: #selector(resetSaveFolder),
+                keyEquivalent: ""
+            )
+            resetItem.target = self
+            menu.addItem(resetItem)
         }
 
         menu.addItem(.separator())

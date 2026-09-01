@@ -2,6 +2,16 @@
 
 All notable changes to SnapMark are documented in this file.
 
+## [1.2.0] - 2026-09-01
+
+### Added
+- Configurable save folder. **Default Save Folder…** in the menu-bar glyph menu opens a
+  folder picker; screenshots are written there instead of `~/Screenshots`. A
+  **Reset Save Folder to Default** item appears once a custom folder is set.
+  The default is used when nothing is chosen, and also when a previously chosen
+  folder has been moved or deleted — a save never fails because of a stale setting.
+- `ROADMAP.md`: feature backlog ranked against the native macOS screenshot stack.
+
 ## [1.1.0] - 2026-07-07
 
 ### Added
