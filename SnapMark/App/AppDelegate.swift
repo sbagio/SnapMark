@@ -6,6 +6,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     private var statusItem: NSStatusItem!
     private let hotkeyManager = HotkeyManager()
+    private let captureService = ScreenCaptureService()
     private var overlayController: OverlayWindowController?
     private var annotationControllers: [AnnotationWindowController] = []
     private var menu: NSMenu!
@@ -19,6 +20,35 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             self?.startCapture()
         }
         hotkeyManager.register()
+    }
+
+    // MARK: - Permission
+
+    /// Modal alert shown ONLY when a capture genuinely fails on permission —
+    /// never as a preflight. Preflight flags (CGPreflightScreenCaptureAccess)
+    /// read stale after every re-sign and falsely nag when rights are fine, so
+    /// we attempt the capture and react to the actual result instead.
+    private func presentPermissionAlert() {
+        // An accessory app isn't active, so an alert can open behind other
+        // windows. Briefly activate so it's visible, then restore.
+        NSApp.activate(ignoringOtherApps: true)
+
+        let alert = NSAlert()
+        alert.messageText = "Screen Recording Permission Needed"
+        alert.informativeText = """
+        SnapMark needs Screen Recording permission to capture screenshots.
+
+        1. Click "Open System Settings" below.
+        2. Enable SnapMark under Screen Recording.
+        3. Quit and reopen SnapMark — the permission only takes effect after a restart.
+        """
+        alert.alertStyle = .warning
+        alert.addButton(withTitle: "Open System Settings")
+        alert.addButton(withTitle: "Later")
+
+        if alert.runModal() == .alertFirstButtonReturn {
+            ScreenRecordingPermission.openSystemSettings()
+        }
     }
 
     func applicationWillTerminate(_ notification: Notification) {
@@ -49,16 +79,46 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         overlayController?.dismiss()
         overlayController = nil
 
-        let controller = OverlayWindowController()
-        overlayController = controller
+        // No permission preflight: we just attempt the capture below. Preflight
+        // flags go stale after every re-sign and falsely nag when rights are
+        // fine. If the capture actually throws, THEN we show the alert.
 
-        controller.onCaptureComplete = { [weak self] cgImage, screenRect in
-            guard let self else { return }
-            self.overlayController = nil
-            self.openInEditor(cgImage: cgImage, screenRect: screenRect)
+        let mouseLocation = NSEvent.mouseLocation
+        // `NSScreen.screens` can be empty (all displays asleep/locked) — the very
+        // case the fallback chain exists to survive — so never force-index it.
+        guard let cursorScreen = NSScreen.screens.first(where: {
+            $0.frame.contains(mouseLocation)
+        }) ?? NSScreen.main ?? NSScreen.screens.first else {
+            NSLog("SnapMark: No active display available for capture")
+            return
         }
 
-        controller.present()
+        Task { @MainActor in
+            // Freeze the screen BEFORE presenting any overlay, so the bitmap
+            // captures the state at hotkey time (open dropdowns included).
+            let frozenImage: CGImage
+            do {
+                frozenImage = try await self.captureService.captureImage(cgRect: cursorScreen.frame)
+            } catch {
+                NSLog("SnapMark: Freeze capture failed: %@", "\(error)")
+                self.presentPermissionAlert()
+                return
+            }
+
+            let controller = OverlayWindowController(
+                frozenImage: frozenImage,
+                captureScreen: cursorScreen
+            )
+            self.overlayController = controller
+
+            controller.onCaptureComplete = { [weak self] cgImage, screenRect in
+                guard let self else { return }
+                self.overlayController = nil
+                self.openInEditor(cgImage: cgImage, screenRect: screenRect)
+            }
+
+            controller.present()
+        }
     }
 
     // MARK: - Open in Editor
@@ -83,7 +143,16 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             let data    = try? Data(contentsOf: url),
             let nsImage = NSImage(data: data),
             let cgImage = nsImage.cgImage(forProposedRect: nil, context: nil, hints: nil)
-        else { return }
+        else {
+            NSLog("SnapMark: Could not open history item at %@", url.path)
+            let alert = NSAlert()
+            alert.messageText = "Couldn't Open Screenshot"
+            alert.informativeText = "The file may have been moved or deleted:\n\(url.lastPathComponent)"
+            alert.alertStyle = .warning
+            alert.addButton(withTitle: "OK")
+            alert.runModal()
+            return
+        }
 
         // Use NSImage.size (logical points) not cgImage.width/height (pixels)
         // so the editor window is correctly sized on Retina displays.

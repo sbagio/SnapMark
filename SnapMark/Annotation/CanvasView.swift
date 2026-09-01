@@ -5,8 +5,16 @@ import SnapMarkCore
 @MainActor
 final class CanvasView: NSView, NSTextFieldDelegate {
 
-    var baseImage: CGImage?
-    var store: AnnotationStore!
+    private let baseImage: CGImage
+    private let store: AnnotationStore
+
+    /// Text-tool geometry. `fontSize`/`fieldSize` drive the live NSTextField;
+    /// the commit maps the field's centered text to the renderer's baseline
+    /// so committed text lands exactly where it was typed.
+    private static let textFontSize: CGFloat = 16
+    private static let textFieldSize = CGSize(width: 200, height: 30)
+    /// Left content inset of a borderless NSTextField, in points.
+    private static let textFieldInset: CGFloat = 2
 
     // In-progress drawing state
     private var inProgressStart: CGPoint?
@@ -14,6 +22,17 @@ final class CanvasView: NSView, NSTextFieldDelegate {
 
     // Active text field for text tool
     private var activeTextField: NSTextField?
+
+    init(frame: NSRect, store: AnnotationStore, baseImage: CGImage) {
+        self.store = store
+        self.baseImage = baseImage
+        super.init(frame: frame)
+    }
+
+    @available(*, unavailable)
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
 
     // MARK: - Setup
 
@@ -40,10 +59,8 @@ final class CanvasView: NSView, NSTextFieldDelegate {
         // In a flipped NSView (isFlipped=true), CGContextDrawImage inverts the
         // image (row-0 ends up at the bottom), producing a 180° rotation.
         // NSImage.draw is coordinate-system-aware and renders correctly in any view.
-        if let img = baseImage {
-            let nsImage = NSImage(cgImage: img, size: bounds.size)
-            nsImage.draw(in: bounds)
-        }
+        let nsImage = NSImage(cgImage: baseImage, size: bounds.size)
+        nsImage.draw(in: bounds)
 
         // 2. Draw committed annotations.
         // The CGContext CTM is Y-down (from isFlipped=true), matching stored coords.
@@ -156,17 +173,17 @@ final class CanvasView: NSView, NSTextFieldDelegate {
     // MARK: - Text Tool
 
     private func placeTextField(at point: CGPoint) {
-        let field = NSTextField(frame: NSRect(x: point.x, y: point.y, width: 200, height: 30))
+        let field = NSTextField(frame: NSRect(origin: point, size: Self.textFieldSize))
         field.isBezeled = false
         field.drawsBackground = true
         field.backgroundColor = NSColor.black.withAlphaComponent(0.35)
         field.textColor = store.currentColor
-        field.font = .systemFont(ofSize: 16, weight: .semibold)
+        field.font = .systemFont(ofSize: Self.textFontSize, weight: .semibold)
         field.placeholderAttributedString = NSAttributedString(
             string: "Type label…",
             attributes: [
                 .foregroundColor: NSColor.white.withAlphaComponent(0.6),
-                .font: NSFont.systemFont(ofSize: 16, weight: .semibold),
+                .font: NSFont.systemFont(ofSize: Self.textFontSize, weight: .semibold),
             ]
         )
         field.delegate = self
@@ -181,10 +198,10 @@ final class CanvasView: NSView, NSTextFieldDelegate {
 
         if !content.isEmpty {
             store.add(.text(AnnotationItem.TextAnnotation(
-                origin: field.frame.origin,
+                origin: textBaselineOrigin(for: field),
                 content: content,
                 color: store.currentColor,
-                fontSize: 16
+                fontSize: Self.textFontSize
             )))
         }
 
@@ -192,6 +209,20 @@ final class CanvasView: NSView, NSTextFieldDelegate {
         activeTextField = nil
         needsDisplay = true
         window?.makeFirstResponder(self)
+    }
+
+    /// The renderer draws text with its baseline at the stored origin, but an
+    /// NSTextField vertically centers text within its frame and insets it from
+    /// the left. Map the field's on-screen text position to that baseline
+    /// origin so the committed render matches what the user saw while typing.
+    private func textBaselineOrigin(for field: NSTextField) -> CGPoint {
+        let font = field.font ?? .systemFont(ofSize: Self.textFontSize, weight: .semibold)
+        let lineHeight = font.ascender - font.descender   // descender is negative
+        let baselineFromTop = (field.frame.height - lineHeight) / 2 + font.ascender
+        return CGPoint(
+            x: field.frame.origin.x + Self.textFieldInset,
+            y: field.frame.origin.y + baselineFromTop
+        )
     }
 
     // MARK: - Helpers

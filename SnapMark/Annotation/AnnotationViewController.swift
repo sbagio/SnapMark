@@ -24,7 +24,15 @@ final class AnnotationViewController: NSViewController {
     private var isCompact: Bool { WindowSizing.isCompact(captureWidth: logicalSize.width) }
 
     override var preferredContentSize: CGSize {
-        get { CGSize(width: max(WindowSizing.minWidth, logicalSize.width), height: logicalSize.height + 44) }
+        // Must match the capped size the window was created with (WindowSizing
+        // downscales captures larger than the screen), otherwise AppKit can
+        // resize the window past the cap for oversized captures.
+        get {
+            let screenFrame = view.window?.screen?.visibleFrame
+                ?? NSScreen.main?.visibleFrame
+                ?? CGRect(x: 0, y: 0, width: 1440, height: 900)
+            return WindowSizing.compute(captureSize: logicalSize, screenFrame: screenFrame)
+        }
         set { }
     }
 
@@ -45,9 +53,11 @@ final class AnnotationViewController: NSViewController {
 
         // Canvas at fixed logical size — never stretches regardless of window size.
         // Wrapped in a scroll view so the user can resize freely.
-        canvasView = CanvasView(frame: NSRect(origin: .zero, size: logicalSize))
-        canvasView.store = store
-        canvasView.baseImage = image
+        canvasView = CanvasView(
+            frame: NSRect(origin: .zero, size: logicalSize),
+            store: store,
+            baseImage: image
+        )
 
         let scrollView = NSScrollView()
         scrollView.documentView = canvasView
@@ -55,14 +65,14 @@ final class AnnotationViewController: NSViewController {
         scrollView.hasHorizontalScroller = true
         scrollView.autohidesScrollers = true
         scrollView.backgroundColor = NSColor(white: 0.12, alpha: 1)
-scrollView.translatesAutoresizingMaskIntoConstraints = false
+        scrollView.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(scrollView)
 
         NSLayoutConstraint.activate([
             hostingView.topAnchor.constraint(equalTo: view.topAnchor),
             hostingView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             hostingView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            hostingView.heightAnchor.constraint(equalToConstant: 44),
+            hostingView.heightAnchor.constraint(equalToConstant: WindowSizing.toolbarHeight),
 
             scrollView.topAnchor.constraint(equalTo: hostingView.bottomAnchor),
             scrollView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
@@ -74,7 +84,12 @@ scrollView.translatesAutoresizingMaskIntoConstraints = false
         // (no Combine — direct callback avoids Swift 6 actor-crossing issues)
         store.onAnnotationsChanged = { [weak self] in
             self?.canvasView.needsDisplay = true
-            self?.canvasView.resetCursorRects()
+        }
+        // Switching tools changes the cursor (crosshair ↔ iBeam); cursor rects
+        // are only rebuilt on invalidation, so trigger it on tool change.
+        store.onToolChanged = { [weak self] in
+            guard let canvas = self?.canvasView else { return }
+            canvas.window?.invalidateCursorRects(for: canvas)
         }
         store.onCopy        = { [weak self] in self?.handleCopy() }
         store.onSave        = { [weak self] in self?.handleSave() }

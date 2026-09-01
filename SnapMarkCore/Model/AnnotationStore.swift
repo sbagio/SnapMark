@@ -4,7 +4,9 @@ import Combine
 @MainActor
 public final class AnnotationStore: ObservableObject {
     @Published public var annotations: [AnnotationItem] = []
-    @Published public var currentTool: DrawingTool = .arrow
+    @Published public var currentTool: DrawingTool = .arrow {
+        didSet { onToolChanged?() }
+    }
     @Published public var currentColor: NSColor = .red
     @Published public var strokeThickness: StrokeThickness = {
         let raw = UserDefaults.standard.string(forKey: "snapmark.strokeThickness") ?? "medium"
@@ -22,6 +24,7 @@ public final class AnnotationStore: ObservableObject {
     }()
 
     public var onAnnotationsChanged: (() -> Void)?
+    public var onToolChanged:  (() -> Void)?
     public var onCopy:        (() -> Void)?
     public var onSave:        (() -> Void)?
     public var onCopyAndSave: (() -> Void)?

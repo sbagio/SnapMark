@@ -106,7 +106,7 @@ struct ToolbarView: View {
             }
         }
         .padding(.horizontal, 12)
-        .frame(height: 44)
+        .frame(height: WindowSizing.toolbarHeight)
         .background(.regularMaterial)
     }
 }

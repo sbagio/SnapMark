@@ -69,25 +69,26 @@ public struct ExportService {
 
     // MARK: - Save to Disk
 
-    @discardableResult
-    public static func saveToDisk(_ image: NSImage) throws -> URL {
-        let screenshotsDir = FileManager.default.homeDirectoryForCurrentUser
+    /// Default save location: ~/Screenshots. `directory` is injectable so the
+    /// save + encoding-failure paths are testable without touching the home dir.
+    public static func defaultDirectory() -> URL {
+        FileManager.default.homeDirectoryForCurrentUser
             .appendingPathComponent("Screenshots")
+    }
+
+    @discardableResult
+    public static func saveToDisk(
+        _ image: NSImage,
+        directory: URL = ExportService.defaultDirectory()
+    ) throws -> URL {
         try FileManager.default.createDirectory(
-            at: screenshotsDir,
+            at: directory,
             withIntermediateDirectories: true
         )
 
-        let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy-MM-dd-HHmmss"
-        let filename = "SnapMark-\(formatter.string(from: Date())).png"
-        let url = screenshotsDir.appendingPathComponent(filename)
+        let url = directory.appendingPathComponent(ScreenshotFilename.timestamped())
 
-        guard
-            let tiff   = image.tiffRepresentation,
-            let bitmap = NSBitmapImageRep(data: tiff),
-            let png    = bitmap.representation(using: .png, properties: [:])
-        else {
+        guard let png = image.pngData() else {
             throw ExportError.encodingFailed
         }
 

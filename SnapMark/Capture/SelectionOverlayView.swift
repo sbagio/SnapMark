@@ -6,18 +6,34 @@ protocol SelectionOverlayViewDelegate: AnyObject {
     func selectionDidCancel()
 }
 
-/// Full-screen NSView placed on the primary dimming window.
-/// Before dragging: shows full-screen crosshair lines + cursor coordinates.
-/// While dragging: shows the punch-through selection + size label.
+/// Full-screen NSView placed on the selection window. Renders the frozen
+/// capture as the backdrop and handles the selection drag.
+/// Before dragging: full-screen crosshair + cursor coordinates.
+/// While dragging: punch-through selection revealing the crisp frozen pixels.
 @MainActor
 final class SelectionOverlayView: NSView {
 
     weak var delegate: SelectionOverlayViewDelegate?
 
+    /// Frozen full-screen bitmap captured the instant the hotkey fired.
+    /// Drawn as the backdrop so the selection UI shows the screen as it was
+    /// at trigger time, not the live (possibly-changed) screen beneath.
+    private let frozenImage: CGImage
+
     private var startPoint: CGPoint?
     private var currentRect: CGRect?
     private var isDragging = false
     private var cursorPoint: CGPoint?   // tracks mouse at all times
+
+    init(frame: CGRect, frozenImage: CGImage) {
+        self.frozenImage = frozenImage
+        super.init(frame: frame)
+    }
+
+    @available(*, unavailable)
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
 
     // MARK: - Setup
 
@@ -38,13 +54,18 @@ final class SelectionOverlayView: NSView {
     override func draw(_ dirtyRect: NSRect) {
         guard let ctx = NSGraphicsContext.current?.cgContext else { return }
 
-        // 1. Dim the whole screen
-        ctx.setFillColor(NSColor.black.withAlphaComponent(0.50).cgColor)
+        // 1. Draw the frozen screenshot as the backdrop, then dim it. The
+        //    scrim sits on top so the whole screen reads as "inactive" until
+        //    the user punches through a selection.
+        drawFrozenImage(in: bounds, ctx: ctx)
+        ctx.setFillColor(NSColor.black.withAlphaComponent(DimmingOverlayWindow.dimAlpha).cgColor)
         ctx.fill(bounds)
 
         if isDragging, let rect = currentRect, rect.width > 2, rect.height > 2 {
             // ── Active selection ────────────────────────────────────────────
-            ctx.clear(rect)
+            // Reveal the crisp frozen pixels inside the selection by redrawing
+            // the frozen image clipped to the rect (over the scrim).
+            drawFrozenImage(in: rect, ctx: ctx)
             ctx.setStrokeColor(NSColor.white.withAlphaComponent(0.9).cgColor)
             ctx.setLineWidth(1.5)
             ctx.stroke(rect.insetBy(dx: 0.75, dy: 0.75))
@@ -54,6 +75,19 @@ final class SelectionOverlayView: NSView {
             drawCrosshair(at: pos, in: ctx)
             drawCoordinateLabel(at: pos, in: ctx)
         }
+    }
+
+    // Draws the frozen full-screen bitmap so it fills `bounds`, clipped to
+    // `clipRect`. The view is flipped (Y-down), so we flip the CTM to draw the
+    // CGImage right-side-up; the image spans the whole screen, and clipping
+    // restricts it to the region we want to reveal.
+    private func drawFrozenImage(in clipRect: CGRect, ctx: CGContext) {
+        ctx.saveGState()
+        ctx.clip(to: clipRect)
+        ctx.translateBy(x: 0, y: bounds.height)
+        ctx.scaleBy(x: 1, y: -1)
+        ctx.draw(frozenImage, in: bounds)
+        ctx.restoreGState()
     }
 
     // Full-screen crosshair — thin white lines through the cursor

@@ -37,16 +37,9 @@ public final class HistoryStore {
     // MARK: - Save
 
     public func save(_ image: NSImage) {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy-MM-dd-HHmmss"
-        let filename = "SnapMark-\(formatter.string(from: Date())).png"
-        let url = historyDir.appendingPathComponent(filename)
+        let url = historyDir.appendingPathComponent(ScreenshotFilename.timestamped())
 
-        guard
-            let tiff   = image.tiffRepresentation,
-            let bitmap = NSBitmapImageRep(data: tiff),
-            let png    = bitmap.representation(using: .png, properties: [:])
-        else {
+        guard let png = image.pngData() else {
             NSLog("SnapMark: Failed to encode history image as PNG")
             return
         }
