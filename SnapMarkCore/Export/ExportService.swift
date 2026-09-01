@@ -71,7 +71,9 @@ public struct ExportService {
 
     /// Default save location: ~/Screenshots. `directory` is injectable so the
     /// save + encoding-failure paths are testable without touching the home dir.
-    public static func defaultDirectory() -> URL {
+    /// Nonisolated: it only reads FileManager, and `Preferences` needs it off the
+    /// main actor to resolve its fallback.
+    nonisolated public static func defaultDirectory() -> URL {
         FileManager.default.homeDirectoryForCurrentUser
             .appendingPathComponent("Screenshots")
     }
