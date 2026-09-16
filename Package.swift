@@ -21,6 +21,14 @@ let package = Package(
             name: "SnapMark",
             dependencies: ["SnapMarkCore"],
             path: "SnapMark",
+            // The app bundle's resources are assembled by scripts/build-app.sh, not
+            // SwiftPM. Excluding them stops SwiftPM invoking actool on the asset
+            // catalog, which requires a full Xcode that `swift build` should not need.
+            exclude: [
+                "Info.plist",
+                "Resources/SnapMark.entitlements",
+                "Resources/Assets.xcassets",
+            ],
             swiftSettings: [
                 .swiftLanguageMode(.v6)
             ],

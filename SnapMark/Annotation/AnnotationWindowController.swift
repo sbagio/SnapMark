@@ -45,7 +45,11 @@ final class AnnotationWindowController: NSWindowController {
 
     override func showWindow(_ sender: Any?) {
         super.showWindow(sender)
-        NSApp.activate(ignoringOtherApps: true)
+        // activate(ignoringOtherApps:) is deprecated and, from macOS 27, refused for
+        // an .accessory app: the window appeared but never became key, so ⌘C went to
+        // whatever app was still frontmost. AppDelegate keeps us .regular while an
+        // editor is open, which is what gives this request standing.
+        NSApp.activate()
         window?.makeKeyAndOrderFront(nil)
     }
 }

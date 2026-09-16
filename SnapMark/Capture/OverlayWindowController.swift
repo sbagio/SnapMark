@@ -8,6 +8,9 @@ import SnapMarkCore
 final class OverlayWindowController: SelectionOverlayViewDelegate {
 
     var onCaptureComplete: ((CGImage, CGRect) -> Void)?
+    /// Called when the overlay closes without producing a capture, so the app can
+    /// drop back to being a menu-bar-only accessory.
+    var onCancel: (() -> Void)?
 
     private var dimmingWindows: [DimmingOverlayWindow] = []
     private var escapeMonitor: Any?
@@ -46,11 +49,10 @@ final class OverlayWindowController: SelectionOverlayViewDelegate {
             dimmingWindows.append(win)
         }
 
-        // Promote to .regular so the system routes keyboard/mouse events to us.
-        // .accessory apps don't fully become active, so keyDown never fires.
-        // We restore .accessory on dismiss.
-        NSApp.setActivationPolicy(.regular)
-        NSApp.activate(ignoringOtherApps: true)
+        // The app is already .regular by the time we get here — AppDelegate owns
+        // the activation policy for the whole capture, because demoting between the
+        // overlay and the editor is what loses the editor its keyboard focus.
+        NSApp.activate()
 
         escapeMonitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { [weak self] event in
             if event.keyCode == 53 { // Escape
@@ -70,7 +72,6 @@ final class OverlayWindowController: SelectionOverlayViewDelegate {
         }
         dimmingWindows.forEach { $0.orderOut(nil) }
         dimmingWindows.removeAll()
-        NSApp.setActivationPolicy(.accessory)
     }
 
     // MARK: - SelectionOverlayViewDelegate
@@ -87,7 +88,7 @@ final class OverlayWindowController: SelectionOverlayViewDelegate {
                 screenFrame: self.captureScreen.frame,
                 backingScale: self.captureScreen.backingScaleFactor
             ) else {
-                NSLog("SnapMark: Crop failed for rect %@", "\(screenRect)")
+                Log.capture.error("Crop failed for rect \(String(describing: screenRect), privacy: .public)")
                 let alert = NSAlert()
                 alert.messageText = "Capture Failed"
                 alert.informativeText = "Failed to crop the captured image."
@@ -103,6 +104,7 @@ final class OverlayWindowController: SelectionOverlayViewDelegate {
     nonisolated func selectionDidCancel() {
         Task { @MainActor in
             self.dismiss()
+            self.onCancel?()
         }
     }
 }

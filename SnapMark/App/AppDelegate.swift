@@ -31,7 +31,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private func presentPermissionAlert() {
         // An accessory app isn't active, so an alert can open behind other
         // windows. Briefly activate so it's visible, then restore.
-        NSApp.activate(ignoringOtherApps: true)
+        NSApp.activate()
 
         let alert = NSAlert()
         alert.messageText = "Screen Recording Permission Needed"
@@ -89,18 +89,19 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         guard let cursorScreen = NSScreen.screens.first(where: {
             $0.frame.contains(mouseLocation)
         }) ?? NSScreen.main ?? NSScreen.screens.first else {
-            NSLog("SnapMark: No active display available for capture")
+            Log.capture.error("No active display available for capture")
             return
         }
 
-        Task { @MainActor in
+        Task { @MainActor [weak self] in
+            guard let self else { return }
             // Freeze the screen BEFORE presenting any overlay, so the bitmap
             // captures the state at hotkey time (open dropdowns included).
             let frozenImage: CGImage
             do {
                 frozenImage = try await self.captureService.captureImage(cgRect: cursorScreen.frame)
             } catch {
-                NSLog("SnapMark: Freeze capture failed: %@", "\(error)")
+                Log.capture.error("Freeze capture failed: \(error.localizedDescription, privacy: .public)")
                 self.presentPermissionAlert()
                 return
             }
@@ -115,8 +116,17 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                 guard let self else { return }
                 self.overlayController = nil
                 self.openInEditor(cgImage: cgImage, screenRect: screenRect)
+                self.updateActivationPolicy()
+            }
+            controller.onCancel = { [weak self] in
+                guard let self else { return }
+                self.overlayController = nil
+                self.updateActivationPolicy()
             }
 
+            // Promote before presenting and stay promoted through the handoff to the
+            // editor; see updateActivationPolicy.
+            self.updateActivationPolicy()
             controller.present()
         }
     }
@@ -130,9 +140,27 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         )
         annotationControllers.append(annotationController)
         annotationController.onClose = { [weak self, weak annotationController] in
-            self?.annotationControllers.removeAll { $0 === annotationController }
+            guard let self else { return }
+            self.annotationControllers.removeAll { $0 === annotationController }
+            self.updateActivationPolicy()
         }
         annotationController.showWindow(nil)
+    }
+
+    // MARK: - Activation Policy
+
+    /// SnapMark is a menu-bar app, so it sits at `.accessory` at rest. It must be
+    /// `.regular` whenever it owns an on-screen window: macOS 27 refuses an
+    /// activation request from an `.accessory` app, which left the editor visible
+    /// but never key — ⌘C went to whatever app was still frontmost instead.
+    ///
+    /// Policy is owned here, in one place, because the bug was caused by demoting
+    /// in the gap between the overlay closing and the editor opening.
+    private func updateActivationPolicy() {
+        let ownsWindows = overlayController != nil || !annotationControllers.isEmpty
+        let desired: NSApplication.ActivationPolicy = ownsWindows ? .regular : .accessory
+        guard NSApp.activationPolicy() != desired else { return }
+        NSApp.setActivationPolicy(desired)
     }
 
     // MARK: - Save Folder
@@ -149,16 +177,16 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
         // An accessory app is never the active app, so the panel would open behind
         // whatever is in front unless we activate first.
-        NSApp.activate(ignoringOtherApps: true)
+        NSApp.activate()
 
         guard panel.runModal() == .OK, let url = panel.url else { return }
         Preferences.setSaveFolder(url)
-        NSLog("SnapMark: Save folder set to %@", url.path)
+        Log.storage.info("Save folder set to \(url.path, privacy: .public)")
     }
 
     @objc private func resetSaveFolder() {
         Preferences.resetSaveFolder()
-        NSLog("SnapMark: Save folder reset to %@", Preferences.saveFolder().path)
+        Log.storage.info("Save folder reset to \(Preferences.saveFolder().path, privacy: .public)")
     }
 
     // MARK: - Open History Item
@@ -170,7 +198,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             let nsImage = NSImage(data: data),
             let cgImage = nsImage.cgImage(forProposedRect: nil, context: nil, hints: nil)
         else {
-            NSLog("SnapMark: Could not open history item at %@", url.path)
+            Log.storage.error("Could not open history item at \(url.path, privacy: .public)")
             let alert = NSAlert()
             alert.messageText = "Couldn't Open Screenshot"
             alert.informativeText = "The file may have been moved or deleted:\n\(url.lastPathComponent)"

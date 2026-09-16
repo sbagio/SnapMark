@@ -178,7 +178,7 @@ final class AnnotationViewController: NSViewController {
         if save {
             do {
                 let url = try ExportService.saveToDisk(img, directory: Preferences.saveFolder())
-                NSLog("SnapMark: Saved to %@", url.path)
+                Log.storage.info("Saved to \(url.path, privacy: .public)")
             } catch {
                 showError("Save Failed", detail: error.localizedDescription)
                 return

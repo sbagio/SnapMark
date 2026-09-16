@@ -18,7 +18,7 @@ public final class HistoryStore {
                 at: historyDir, withIntermediateDirectories: true
             )
         } catch {
-            NSLog("SnapMark: Failed to create history directory: %@", error.localizedDescription)
+            Log.storage.error("Failed to create history directory: \(error.localizedDescription, privacy: .public)")
         }
     }
 
@@ -30,7 +30,7 @@ public final class HistoryStore {
                 at: historyDir, withIntermediateDirectories: true
             )
         } catch {
-            NSLog("SnapMark: Failed to create history directory: %@", error.localizedDescription)
+            Log.storage.error("Failed to create history directory: \(error.localizedDescription, privacy: .public)")
         }
     }
 
@@ -40,14 +40,14 @@ public final class HistoryStore {
         let url = historyDir.appendingPathComponent(ScreenshotFilename.timestamped())
 
         guard let png = image.pngData() else {
-            NSLog("SnapMark: Failed to encode history image as PNG")
+            Log.storage.error("Failed to encode history image as PNG")
             return
         }
 
         do {
             try png.write(to: url)
         } catch {
-            NSLog("SnapMark: Failed to write history image: %@", error.localizedDescription)
+            Log.storage.error("Failed to write history image: \(error.localizedDescription, privacy: .public)")
         }
         pruneOldItems()
     }
