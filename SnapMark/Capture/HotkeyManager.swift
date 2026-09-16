@@ -1,5 +1,6 @@
 import Carbon
 import AppKit
+import SnapMarkCore
 
 /// Registers a global hotkey (Cmd+Shift+2) using the Carbon EventHotKey API.
 /// Does NOT require Accessibility permission — works purely at the Carbon event layer.
@@ -41,7 +42,7 @@ final class HotkeyManager {
         )
 
         guard status == noErr else {
-            NSLog("SnapMark: Failed to install hotkey event handler: \(status)")
+            Log.capture.error("Failed to install hotkey event handler: \(status, privacy: .public)")
             return
         }
 
@@ -57,7 +58,7 @@ final class HotkeyManager {
         )
 
         if regStatus != noErr {
-            NSLog("SnapMark: Failed to register hotkey: \(regStatus)")
+            Log.capture.error("Failed to register hotkey: \(regStatus, privacy: .public)")
         }
     }
 

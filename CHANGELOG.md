@@ -2,6 +2,27 @@
 
 All notable changes to SnapMark are documented in this file.
 
+## [1.2.1] - 2026-09-16
+
+### Fixed
+- ⌘C (and ⌘S / ⌘↩) did nothing immediately after a capture on macOS 27; the editor
+  window appeared but never took keyboard focus, so the shortcut went to whatever
+  app was still frontmost and the Copy button had to be clicked instead.
+  SnapMark dropped back to `.accessory` when the selection overlay closed and only
+  then opened the editor — and macOS 27 refuses an activation request from an
+  `.accessory` app. Activation policy is now owned in one place and stays
+  `.regular` for as long as SnapMark has a window on screen.
+- `swift build` failed after the macOS 27 upgrade: SwiftPM tried to run `actool`
+  over the app bundle's asset catalog. Those resources are assembled by
+  `scripts/build-app.sh`, so they are now excluded from the SwiftPM target.
+
+### Changed
+- Logging moved from `NSLog` to `os.Logger` (`Log.capture` / `Log.storage`,
+  subsystem `com.snapmark.app`). On macOS 27 `NSLog` reaches only stderr, which is
+  nowhere for an app launched from Finder, so every error path — failed saves,
+  failed crops, denied permissions — was silent in practice.
+- Replaced the deprecated `activate(ignoringOtherApps:)` with `NSApp.activate()`.
+
 ## [1.2.0] - 2026-09-01
 
 ### Added
